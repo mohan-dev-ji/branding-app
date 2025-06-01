@@ -4,6 +4,8 @@ import { useState } from "react";
 import { BrandForm } from "@/components/BrandForm";
 import { PreviewCard } from "@/components/PreviewCard";
 import { PromptGenerator } from "@/components/PromptGenerator";
+import { LogoGenerator } from "@/components/LogoGenerator";
+import { ProgressIndicator } from "@/components/ProgressIndicator";
 
 export interface BrandData {
   name: string;
@@ -31,6 +33,41 @@ export default function Home() {
     setBrandData(data);
   };
 
+  // Calculate progress steps
+  const hasBasicInfo = brandData.name && brandData.description;
+  const hasPrompts = generatedPrompts.length > 0;
+  
+  const progressSteps = [
+    {
+      id: "brand-info",
+      title: "Brand Information",
+      description: "Fill out your brand details",
+      completed: Boolean(hasBasicInfo && brandData.colors.length > 0 && brandData.tone),
+      current: !hasBasicInfo,
+    },
+    {
+      id: "concepts",
+      title: "Generate Concepts",
+      description: "AI-powered logo concept prompts",
+      completed: hasPrompts,
+      current: Boolean(hasBasicInfo && !hasPrompts),
+    },
+    {
+      id: "logos",
+      title: "Create Logos",
+      description: "Generate actual logo designs",
+      completed: false, // Will be updated when logos are generated
+      current: hasPrompts,
+    },
+    {
+      id: "finalize",
+      title: "Export & Use",
+      description: "Download and implement your logo",
+      completed: false,
+      current: false,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
@@ -47,6 +84,8 @@ export default function Home() {
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Left Column - Form */}
           <div className="space-y-6">
+            <ProgressIndicator steps={progressSteps} />
+            
             <BrandForm 
               brandData={brandData} 
               onBrandDataChange={handleBrandDataChange}
@@ -83,6 +122,16 @@ export default function Home() {
             )}
           </div>
         </div>
+
+        {/* Logo Generator Section - Full Width */}
+        {generatedPrompts.length > 0 && (
+          <div className="mt-8 max-w-6xl mx-auto">
+            <LogoGenerator 
+              prompts={generatedPrompts}
+              brandName={brandData.name || "Your Brand"}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
